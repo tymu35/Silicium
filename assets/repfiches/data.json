@@ -24,15 +24,16 @@
     "price": 120
   },
   {
-    "id": "bois_0001",
+    "id": "Bois_0001",
     "mineral": "Bois fossile",
     "provenance": "Brésil",
     "status": "nfs",
     "dimensions": "24x14,5x0,7 cm",
     "type": "image",
-    "src": "assets/videos/bois_0001.jpg",
-    "thumb": "assets/videos/bois_0001.jpg",
+    "src": "assets/videos/Bois_0001.jpg",
+    "thumb": "assets/videos/Bois_0001.jpg",
     "desc": "Psaronius brasiliensis, Permien."
   }
 ]
+
 
