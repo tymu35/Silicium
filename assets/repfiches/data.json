@@ -1,0 +1,26 @@
+[
+  {
+    "id": "quartz-lagardette-nfs",
+    "mineral": "Quartz",
+    "provenance": "La Gardette, France",
+    "status": "nfs",
+    "dimensions": "6×4×3 cm",
+    "type": "image",
+    "src": "assets/images/quartz_lagardette.jpg",
+    "thumb": "assets/images/quartz_lagardette.jpg",
+    "desc": "Cristaux élancés et brillants, groupe esthétique sur matrice."
+  },
+  {
+    "id": "quartz-schorl-erongo",
+    "mineral": "Quartz & Schorl",
+    "provenance": "Erongo, Namibie",
+    "status": "disponible",
+    "dimensions": "7×4×5 cm",
+    "type": "video",
+    "src": "assets/videos/Nam_Quartz_Schorl_001.mp4",
+    "poster": "assets/videos/Nam_Quartz_Schorl_001.jpg",
+    "thumb": "assets/videos/Nam_Quartz_Schorl_001.jpg",
+    "desc": "Tour de cristaux aciculaires de tourmaline (schorl) sur quartz.",
+    "price": 120
+  }
+]
