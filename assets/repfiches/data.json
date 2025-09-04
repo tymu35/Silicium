@@ -10,7 +10,7 @@
     "poster": "assets/videos/Nam_Quartz_Schorl_001.jpg",
     "thumb": "assets/videos/Nam_Quartz_Schorl_001.jpg",
     "desc": "Tour de cristaux aciculaires de tourmaline (schorl) sur quartz.",
-    "price": "200€ envoi inclus"
+    "price": 200€
   },
   {
     "id": "Bois_0001",
@@ -24,6 +24,7 @@
     "desc": "Psaronius brasiliensis, Permien."
   }
 ]
+
 
 
 
