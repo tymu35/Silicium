@@ -38,9 +38,9 @@
     .media{position:relative; aspect-ratio:4/3; background:#0b0e14}
     .media img, .media video{width:100%; height:100%; object-fit:cover; display:block}
     .badge{position:absolute; top:10px; left:10px; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700; letter-spacing:.3px; background:rgba(255,255,255,.1); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.2)}
-    .badge[data-status="disponible"]{background:rgba(32,201,151,.15); border-color:rgba(32,201,151,.35)}
+    .badge[data-status="disponible"]{background:orange; border-color:#cc8400; color:black}
     .badge[data-status="reserve"]{background:rgba(245,159,0,.15); border-color:rgba(245,159,0,.35)}
-    .badge[data-status="nfs"]{background:rgba(239,71,111,.15); border-color:rgba(239,71,111,.35)}
+    .badge[data-status="vendu"]{background:rgba(239,71,111,.15); border-color:rgba(239,71,111,.35)}
 
     .content{padding:14px 14px 16px}
     .title{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px}
@@ -89,7 +89,7 @@
             <option value="">Tous statuts</option>
             <option value="disponible">Disponible</option>
             <option value="reserve">Réservé</option>
-            <option value="nfs">collection privée</option>
+            <option value="vendu">Vendu</option>
           </select>
         </label>
       </div>
@@ -99,17 +99,16 @@
   <main class="wrap">
     <section id="grid" class="grid" aria-live="polite">
 
-      <!-- ======= EXEMPLES ======= -->
-      <!-- Image -->
+      <!-- Exemple image -->
       <article class="card" tabindex="0"
         data-mineral="Quartz"
         data-provenance="La Gardette, France"
-        data-status="nfs"
+        data-status="disponible"
         data-dimensions="6×4×3 cm"
         data-keywords="aiguilles transparent cristallisé"
       >
         <div class="media" data-type="image" data-src="https://images.unsplash.com/photo-1526318472351-c75fcf070305?auto=format&fit=crop&w=1200&q=60" aria-label="Photo du spécimen">
-          <span class="badge" data-status="nfs">NFS</span>
+          <span class="badge" data-status="disponible">Disponible</span>
           <img loading="lazy" alt="Quartz – La Gardette (France)" src="https://images.unsplash.com/photo-1526318472351-c75fcf070305?auto=format&fit=crop&w=800&q=50" />
         </div>
         <div class="content">
@@ -121,7 +120,7 @@
             <span>📍 La Gardette, France</span>
             <span>🧪 Silicate</span>
           </div>
-          <p class="desc">Cristaux élancés et très brillants, groupe esthétique sur matrice. Idéal vitrine.</p>
+          <p class="desc">Cristaux élancés et très brillants, groupe esthétique sur matrice.</p>
           <div class="actions">
             <span class="pill">#Quartz</span>
             <a class="msg" href="#" data-msg="Quartz – La Gardette">Me contacter</a>
@@ -129,7 +128,7 @@
         </div>
       </article>
 
-      <!-- Vidéo -->
+      <!-- Exemple vidéo -->
       <article class="card" tabindex="0"
         data-mineral="Quartz & Schorl"
         data-provenance="Erongo, Namibie"
@@ -138,11 +137,9 @@
         data-keywords="cristaux aciculaires tourmaline schorl épitaxie quartz"
       >
         <div class="media" data-type="video" data-src="assets/videos/Nam_Quartz_Schorl_001.mp4">
-         <span class="badge" data-status="disponible">Disponible</span>
-          <video preload="none" muted playsinline
-           poster="assets/videos/Nam_Quartz_Schorl_001.jpg?v=2"></video>
-       </div>
-
+          <span class="badge" data-status="disponible">Disponible</span>
+          <video preload="none" muted playsinline poster="assets/videos/Nam_Quartz_Schorl_001.jpg"></video>
+        </div>
         <div class="content">
           <div class="title">
             <h3>Quartz & Schorl</h3>
@@ -159,7 +156,6 @@
           </div>
         </div>
       </article>
-      <!-- ======= FIN EXEMPLES ======= -->
 
     </section>
   </main>
@@ -174,18 +170,12 @@
   </div>
 
   <script>
-    // === CONFIGURER ICI VOTRE LIEN MESSENGER / FACEBOOK ===
-    const MESSENGER_URL = "https://m.me/thierrym35"; // lien Messenger
+    const MESSENGER_URL = "https://m.me/thierrym35";
+    document.getElementById('contactBtn').href = MESSENGER_URL;
 
-    // Définir l'URL du bouton principal
-    const contactBtn = document.getElementById('contactBtn');
-    contactBtn.href = MESSENGER_URL;
-
-    // Little helpers
     const $ = (q, el=document) => el.querySelector(q);
     const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 
-    // Remplit dynamiquement les listes déroulantes à partir des cartes
     function populateFilters(){
       const minerals = new Set();
       const provs = new Set();
@@ -219,7 +209,6 @@
       $('#grid').setAttribute('data-count', shown);
     }
 
-    // Lightbox simple image/vidéo (robuste)
     const lb = $('#lightbox');
     const lbContent = $('#lbContent');
     $('#closeLb').addEventListener('click', ()=> lb.classList.remove('open'));
@@ -227,14 +216,13 @@
     function openLightbox(mediaEl){
       lbContent.innerHTML = '';
       const type = mediaEl.dataset.type;
-
       if(type === 'video'){
         const v = document.createElement('video');
         v.controls = true;
         v.autoplay = true;
-        v.muted = true;       // évite blocages autoplay
+        v.muted = true;
         v.playsInline = true;
-        v.src = mediaEl.dataset.src; // ex: assets/videos/xxx.mp4
+        v.src = mediaEl.dataset.src;
         lbContent.appendChild(v);
         v.addEventListener('loadeddata', () => {
           v.play().catch(()=>{});
@@ -249,14 +237,12 @@
       lb.classList.add('open');
     }
 
-    // Clic sur le conteneur .media (fiable pour image & vidéo)
     function initMedia(){
       $$('.media').forEach(m=>{
         m.addEventListener('click', ()=> openLightbox(m));
       });
     }
 
-    // Boutons "Me contacter" : ouvrent Messenger (sans pré-remplir)
     document.addEventListener('click', (e)=>{
       const a = e.target.closest('a.msg');
       if(!a) return;
@@ -264,16 +250,13 @@
       window.open(MESSENGER_URL, '_blank');
     });
 
-    // Listeners filtres
     ['q','mineralSelect','provSelect','statusSelect'].forEach(id=>{
       document.getElementById(id).addEventListener('input', filter);
       document.getElementById(id).addEventListener('change', filter);
     });
 
-    // Accessibilité: fermer la lightbox avec Echap
     document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') lb.classList.remove('open'); });
 
-    // Init
     document.getElementById('year').textContent = new Date().getFullYear();
     populateFilters();
     initMedia();
@@ -281,7 +264,3 @@
   </script>
 </body>
 </html>
-
-
-
-
