@@ -22,16 +22,6 @@
     "src": "assets/videos/Bois_0001.jpg",
     "thumb": "assets/videos/Bois_0001.jpg",
     "desc": "Psaronius brasiliensis, Permien."
-  },
-  {
-    "id": "Calcedoine_0001",
-    "mineral": "Calcédoine",
-    "provenance": "Brésil",
-    "status": "nfs",
-    "dimensions": "11×7×8 cm",
-    "type": "image",
-    "src": "assets/videos/Calcedoine_0001.jpg",
-    "thumb": "assets/videos/Calcedoine_0001.jpg",
-    "desc": "Concrétions en oreilles"
   }
 ]
+
