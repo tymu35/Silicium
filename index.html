@@ -29,11 +29,9 @@
     input[type="search"], select{width:100%; background:transparent; border:none; color:var(--text); outline:none}
     .tool:focus-within{box-shadow:var(--ring); border-color:rgba(122,162,255,.45)}
 
-    /* ✅ Options des sélecteurs lisibles quand la liste est ouverte */
-    select option,
-    select optgroup{ background:#ffffff !important; color:#111111 !important; }
-    select:focus,
-    select:active{ background:#ffffff; color:#111111; }
+    /* ✅ Options lisibles quand la liste est ouverte */
+    select option, select optgroup{ background:#ffffff !important; color:#111111 !important; }
+    select:focus, select:active{ background:#ffffff; color:#111111; }
 
     main{padding:32px 0}
     .grid{display:grid; gap:18px; grid-template-columns:repeat(1,minmax(0,1fr))}
@@ -47,6 +45,9 @@
     .badge[data-status="disponible"]{background:orange; border-color:#cc8400; color:black}
     .badge[data-status="nfs"]{background:lightblue; border-color:#3399cc; color:black}
 
+    .price{position:absolute; bottom:10px; right:10px; padding:6px 10px; border-radius:10px; font-size:12px; font-weight:800; background:#ffe8b3; color:#111; border:1px solid #e4b860; display:none}
+    .card[data-status="disponible"] .price{display:inline-block} /* pour plus tard si tu actives les prix */
+
     .content{padding:14px 14px 16px}
     .title{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px}
     .title h3{margin:0; font-size:18px}
@@ -55,6 +56,7 @@
     .desc{margin:10px 0 12px; color:#cfd6e6; font-size:14px; line-height:1.5}
     .actions{display:flex; align-items:center; justify-content:space-between}
     .pill{padding:8px 12px; background:var(--card); border:1px solid rgba(255,255,255,.1); border-radius:999px; font-size:12px; color:var(--muted)}
+    .pill.views{min-width:70px; text-align:center}
     .msg{display:inline-flex; align-items:center; gap:8px; padding:10px 12px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#091019; font-weight:700; border-radius:12px}
 
     /* Lightbox */
@@ -102,67 +104,7 @@
 
   <main class="wrap">
     <section id="grid" class="grid" aria-live="polite">
-
-      <!-- Fiche NFS (exemple) -->
-      <article class="card" tabindex="0"
-        data-id="quartz-lagardette-nfs"
-        data-mineral="Quartz"
-        data-provenance="La Gardette, France"
-        data-status="nfs"
-        data-dimensions="6×4×3 cm"
-        data-keywords=""
-      >
-        <div class="media" data-type="image" data-src="https://images.unsplash.com/photo-1526318472351-c75fcf070305?auto=format&fit=crop&w=1200&q=60" aria-label="Photo du spécimen">
-          <span class="badge" data-status="nfs">Collection NFS</span>
-          <img loading="lazy" alt="Quartz – La Gardette (France)" src="https://images.unsplash.com/photo-1526318472351-c75fcf070305?auto=format&fit=crop&w=800&q=50" />
-        </div>
-        <div class="content">
-          <div class="title">
-            <h3>Quartz</h3>
-            <span class="pill">6×4×3 cm</span>
-          </div>
-          <div class="meta">
-            <span>📍 La Gardette, France</span>
-            <span>🧪 Silicate</span>
-          </div>
-          <p class="desc">Cristaux élancés et très brillants, groupe esthétique sur matrice.</p>
-          <div class="actions">
-            <span class="pill views" data-id="quartz-lagardette-nfs">0 vue</span>
-            <span></span>
-          </div>
-        </div>
-      </article>
-
-      <!-- Fiche Disponible (exemple vidéo) -->
-      <article class="card" tabindex="0"
-        data-id="quartz-schorl-erongo"
-        data-mineral="Quartz & Schorl"
-        data-provenance="Erongo, Namibie"
-        data-status="disponible"
-        data-dimensions="7×4×5 cm"
-        data-keywords=""
-      >
-        <div class="media" data-type="video" data-src="assets/videos/Nam_Quartz_Schorl_001.mp4">
-          <span class="badge" data-status="disponible">Disponible</span>
-          <video preload="none" muted playsinline poster="assets/videos/Nam_Quartz_Schorl_001.jpg"></video>
-        </div>
-        <div class="content">
-          <div class="title">
-            <h3>Quartz & Schorl</h3>
-            <span class="pill">7×4×5 cm</span>
-          </div>
-          <div class="meta">
-            <span>📍 Erongo, Namibie</span>
-            <span>🧪 Quartz, Schorl</span>
-          </div>
-          <p class="desc">Tour de cristaux aciculaires de tourmaline (schorl) sur quartz.</p>
-          <div class="actions">
-            <span class="pill views" data-id="quartz-schorl-erongo">0 vue</span>
-            <a class="msg" href="#" data-msg="Quartz & Schorl – Erongo">Me contacter</a>
-          </div>
-        </div>
-      </article>
-
+      <!-- Les cartes seront générées ici depuis data.json -->
     </section>
   </main>
 
@@ -176,47 +118,92 @@
   </div>
 
   <script>
+    // === CONFIG ===
     const MESSENGER_URL = "https://m.me/thierrym35";
-    document.getElementById('contactBtn').href = MESSENGER_URL;
+    const DATA_URL      = "assets/repfiches/data.json"; // <= ton inventaire
 
+    document.getElementById('contactBtn').href = MESSENGER_URL;
     const $ = (q, el=document) => el.querySelector(q);
     const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 
     // --- Compteur de vues (localStorage) ---
     function viewsKey(id){ return `views:${id}`; }
-    function getViews(id){
-      const n = parseInt(localStorage.getItem(viewsKey(id)) || '0', 10);
-      return isNaN(n) ? 0 : n;
-    }
-    function setViews(id, n){ localStorage.setItem(viewsKey(id), String(n)); }
-    function fmtViews(n){ return n <= 1 ? `${n} vue` : `${n} vues`; }
-    function updateViewsLabel(id, n){
-      const el = document.querySelector(`.pill.views[data-id="${id}"]`);
-      if(el) el.textContent = fmtViews(n);
-    }
-    function incViews(id){
-      const n = getViews(id) + 1;
-      setViews(id, n);
-      updateViewsLabel(id, n);
-    }
-    function initViews(){
-      document.querySelectorAll('.card[data-id]').forEach(card=>{
-        updateViewsLabel(card.dataset.id, getViews(card.dataset.id));
-      });
+    function getViews(id){ const n = parseInt(localStorage.getItem(viewsKey(id))||'0',10); return isNaN(n)?0:n; }
+    function setViews(id,n){ localStorage.setItem(viewsKey(id), String(n)); }
+    function fmtViews(n){ return n<=1 ? `${n} vue` : `${n} vues`; }
+    function updateViewsLabel(id,n){ const el=$(`.pill.views[data-id="${id}"]`); if(el) el.textContent=fmtViews(n); }
+    function incViews(id){ const n=getViews(id)+1; setViews(id,n); updateViewsLabel(id,n); }
+
+    // --- Construction d'une carte
+    function cardHTML(item){
+      const {
+        id, mineral, provenance, status, dimensions,
+        type="image", // "image" ou "video"
+        src,          // chemin de l'image OU de la vidéo (pour la lightbox)
+        thumb,        // image affichée dans la carte (si non fourni, on prendra src si type=image)
+        poster,       // image de couverture du <video>
+        desc="",      // description
+        price         // (optionnel) prix en €
+      } = item;
+
+      const badgeLabel = status === "nfs" ? "Collection NFS" : "Disponible";
+      const mediaDataSrc = src || "";
+      const thumbSrc = type === "image" ? (thumb || src) : (thumb || poster || "");
+      const posterAttr = type === "video" && poster ? ` poster="${poster}"` : "";
+
+      return `
+      <article class="card" tabindex="0"
+        data-id="${id}"
+        data-mineral="${mineral}"
+        data-provenance="${provenance}"
+        data-status="${status}"
+        data-dimensions="${dimensions||""}"
+        data-keywords=""
+      >
+        <div class="media" data-type="${type}" data-src="${mediaDataSrc}">
+          <span class="badge" data-status="${status}">${badgeLabel}</span>
+          ${ price!=null && status==="disponible" ? `<span class="price">€ ${price}</span>` : "" }
+          ${
+            type==="video"
+            ? `<video preload="none" muted playsinline${posterAttr}></video>`
+            : `<img loading="lazy" alt="${mineral} — ${provenance}" src="${thumbSrc}" />`
+          }
+        </div>
+        <div class="content">
+          <div class="title">
+            <h3>${mineral}</h3>
+            <span class="pill">${dimensions||""}</span>
+          </div>
+          <div class="meta">
+            <span>📍 ${provenance}</span>
+          </div>
+          <p class="desc">${desc||""}</p>
+          <div class="actions">
+            <span class="pill views" data-id="${id}">0 vue</span>
+            ${ status==="disponible" ? `<a class="msg" href="#" data-msg="${mineral} — ${provenance}">Me contacter</a>` : "<span></span>" }
+          </div>
+        </div>
+      </article>`;
     }
 
-    // Filtres
-    function populateFilters(){
-      const minerals = new Set();
-      const provs = new Set();
-      $$('#grid .card').forEach(card=>{
-        minerals.add(card.dataset.mineral);
-        provs.add(card.dataset.provenance);
-      });
+    // --- Rendu
+    function render(items){
+      const grid = $('#grid');
+      grid.innerHTML = items.map(cardHTML).join('');
+      initViews();
+      initMedia();
+      populateFilters(items);
+      filter();
+    }
+
+    // --- Filtres
+    function populateFilters(items){
+      const minerals = new Set(items.map(i=>i.mineral));
+      const provs    = new Set(items.map(i=>i.provenance));
       const mineralSelect = $('#mineralSelect');
       const provSelect = $('#provSelect');
-      for(const m of [...minerals].sort()) mineralSelect.insertAdjacentHTML('beforeend', `<option value="${m}">${m}</option>`);
-      for(const p of [...provs].sort()) provSelect.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`);
+      minerals.forEach(m=> mineralSelect.insertAdjacentHTML('beforeend', `<option value="${m}">${m}</option>`));
+      provs.forEach(p=> provSelect.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
     }
 
     function filter(){
@@ -233,18 +220,16 @@
         const matchM = !m || card.dataset.mineral === m;
         const matchP = !p || card.dataset.provenance === p;
         const matchS = !sNorm || status === sNorm;
-
         const ok = matchQ && matchM && matchP && matchS;
         card.style.display = ok ? '' : 'none';
         if(ok) shown++;
       });
-      $('#grid').setAttribute('aria-busy', 'false');
+      $('#grid').setAttribute('aria-busy','false');
       $('#grid').setAttribute('data-count', shown);
     }
 
-    // Lightbox
-    const lb = $('#lightbox');
-    const lbContent = $('#lbContent');
+    // --- Lightbox
+    const lb = $('#lightbox'); const lbContent = $('#lbContent');
     $('#closeLb').addEventListener('click', ()=> lb.classList.remove('open'));
 
     function openLightbox(mediaEl){
@@ -252,13 +237,10 @@
       const type = mediaEl.dataset.type;
       if(type === 'video'){
         const v = document.createElement('video');
-        v.controls = true;
-        v.autoplay = true;
-        v.muted = true;
-        v.playsInline = true;
+        v.controls = true; v.autoplay = true; v.muted = true; v.playsInline = true;
         v.src = mediaEl.dataset.src;
         lbContent.appendChild(v);
-        v.addEventListener('loadeddata', () => { v.play().catch(()=>{}); });
+        v.addEventListener('loadeddata', ()=> v.play().catch(()=>{}));
       } else {
         const img = document.createElement('img');
         const thumb = mediaEl.querySelector('img');
@@ -273,13 +255,21 @@
       $$('.media').forEach(m=>{
         m.addEventListener('click', ()=>{
           const card = m.closest('.card');
-          if(card && card.dataset.id) incViews(card.dataset.id); // +1 vue à l’ouverture
+          if(card && card.dataset.id) incViews(card.dataset.id); // +1 vue
           openLightbox(m);
         });
       });
     }
 
-    // Messenger
+    // --- Vues (init)
+    function initViews(){
+      document.querySelectorAll('.card[data-id]').forEach(card=>{
+        const id = card.dataset.id;
+        updateViewsLabel(id, getViews(id));
+      });
+    }
+
+    // --- Messenger
     document.addEventListener('click', (e)=>{
       const a = e.target.closest('a.msg');
       if(!a) return;
@@ -287,21 +277,30 @@
       window.open(MESSENGER_URL, '_blank');
     });
 
-    // Listeners filtres
+    // --- Listeners filtres
     ['q','mineralSelect','provSelect','statusSelect'].forEach(id=>{
       document.getElementById(id).addEventListener('input', filter);
       document.getElementById(id).addEventListener('change', filter);
     });
 
-    // Divers
+    // --- Divers
     document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') lb.classList.remove('open'); });
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Init
-    populateFilters();
-    initViews();
-    initMedia();
-    filter();
+    // --- Chargement des données
+    async function loadData(){
+      try{
+        const resp = await fetch(DATA_URL, {cache:'no-store'});
+        if(!resp.ok) throw new Error('HTTP '+resp.status);
+        const items = await resp.json();
+        render(items);
+      }catch(err){
+        console.error('Erreur chargement data.json', err);
+        $('#grid').innerHTML = `<p style="color:#f99">Erreur de chargement des fiches. Vérifie ${DATA_URL}</p>`;
+      }
+    }
+
+    loadData();
   </script>
 </body>
 </html>
