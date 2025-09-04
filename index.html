@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Collection Th.Menu</title>
-  <meta name="description" content="Galerie personnelle de minéraux avec fiches, photos, vidéos et statut de disponibilité." />
+  <title>Collection Th.Menu — Silicium</title>
+  <meta name="description" content="Galerie personnelle de minéraux (photos & vidéos) avec statut de disponibilité et contact Messenger." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -99,13 +99,14 @@
   <main class="wrap">
     <section id="grid" class="grid" aria-live="polite">
 
-      <!-- ======= DUPLIQUE CE BLOC POUR CHAQUE SPÉCIMEN ======= -->
+      <!-- ======= EXEMPLES ======= -->
+      <!-- Image -->
       <article class="card" tabindex="0"
-        data-mineral="Quartz faux"
-        data-provenance="On sait pas"
-        data-status="NFS"
-        data-dimensions="7×4×5 cm"
-        data-keywords="Par Toutais!"
+        data-mineral="Quartz"
+        data-provenance="La Gardette, France"
+        data-status="disponible"
+        data-dimensions="6×4×3 cm"
+        data-keywords="aiguilles transparent cristallisé"
       >
         <div class="media" data-type="image" data-src="https://images.unsplash.com/photo-1526318472351-c75fcf070305?auto=format&fit=crop&w=1200&q=60" aria-label="Photo du spécimen">
           <span class="badge" data-status="disponible">Disponible</span>
@@ -128,19 +129,18 @@
         </div>
       </article>
 
+      <!-- Vidéo -->
       <article class="card" tabindex="0"
         data-mineral="Quartz & Schorl"
         data-provenance="Erongo, Namibie"
-        data-status="Disponible"
+        data-status="disponible"
         data-dimensions="7×4×5 cm"
-        data-keywords="Tour de cristaux aciculaires de Tourmaline vs. Tour de cristaux epitaxiaux de Quarz."
+        data-keywords="cristaux aciculaires tourmaline schorl épitaxie quartz"
       >
-
-      <div class="media" data-type="video" data-src="assets/videos/Nam_Quartz_Schorl_001.mp4">
-      <span class="badge" data-status="disponible">Disponible</span>
-      <video preload="none" playsinline muted poster="https://images.unsplash.com/photo-1526318472351-c75fcf070305?auto=format&fit=crop&w=1200&q=60"></video>
-      </div>
-		  
+        <div class="media" data-type="video" data-src="assets/videos/Nam_Quartz_Schorl_001.mp4">
+          <span class="badge" data-status="disponible">Disponible</span>
+          <video preload="none" muted playsinline poster="https://images.unsplash.com/photo-1526318472351-c75fcf070305?auto=format&fit=crop&w=1200&q=60"></video>
+        </div>
         <div class="content">
           <div class="title">
             <h3>Quartz & Schorl</h3>
@@ -150,14 +150,14 @@
             <span>📍 Erongo, Namibie</span>
             <span>🧪 Quartz, Schorl</span>
           </div>
-          <p class="desc">Tour de cristaux aciculaires de Tourmaline vs. Tour de cristaux epitaxiaux de Quarz.</p>
+          <p class="desc">Tour de cristaux aciculaires de tourmaline (schorl) sur quartz.</p>
           <div class="actions">
-            <span class="pill">#SchorlProut</span>
-            <a class="msg" href="#" data-msg="Schorl - Quartz">Me contacter</a>
+            <span class="pill">#Quartz #Schorl</span>
+            <a class="msg" href="#" data-msg="Quartz & Schorl – Erongo">Me contacter</a>
           </div>
         </div>
       </article>
-      <!-- ======= FIN D'EXEMPLE ======= -->
+      <!-- ======= FIN EXEMPLES ======= -->
 
     </section>
   </main>
@@ -172,11 +172,9 @@
   </div>
 
   <script>
-    // === CONFIGURE ICI VOTRE LIEN MESSENGER / FACEBOOK ===
-    const MESSENGER_URL = "https://m.me/thierrym35"; // remplace par ton lien Messenger
-	// https://www.facebook.com/thierrym35
-	// 
-	
+    // === CONFIGURER ICI VOTRE LIEN MESSENGER / FACEBOOK ===
+    const MESSENGER_URL = "https://m.me/thierrym35"; // lien Messenger
+
     // Définir l'URL du bouton principal
     const contactBtn = document.getElementById('contactBtn');
     contactBtn.href = MESSENGER_URL;
@@ -219,49 +217,49 @@
       $('#grid').setAttribute('data-count', shown);
     }
 
-    // Lightbox simple image/vidéo
+    // Lightbox simple image/vidéo (robuste)
     const lb = $('#lightbox');
     const lbContent = $('#lbContent');
     $('#closeLb').addEventListener('click', ()=> lb.classList.remove('open'));
 
-    function openLightbox(el){
-      lbContent.innerHTML='';
-      const type = el.closest('.media').dataset.type;
+    function openLightbox(mediaEl){
+      lbContent.innerHTML = '';
+      const type = mediaEl.dataset.type;
+
       if(type === 'video'){
         const v = document.createElement('video');
-        v.controls = true; v.autoplay = true; v.playsInline = true;
-        v.src = el.closest('.media').dataset.src;
+        v.controls = true;
+        v.autoplay = true;
+        v.muted = true;       // évite blocages autoplay
+        v.playsInline = true;
+        v.src = mediaEl.dataset.src; // ex: assets/videos/xxx.mp4
         lbContent.appendChild(v);
-      }else{
+        v.addEventListener('loadeddata', () => {
+          v.play().catch(()=>{});
+        });
+      } else {
         const img = document.createElement('img');
-        img.src = el.getAttribute('src');
-        img.alt = el.alt || '';
+        const thumb = mediaEl.querySelector('img');
+        img.src = thumb.getAttribute('src');
+        img.alt = thumb.alt || '';
         lbContent.appendChild(img);
       }
       lb.classList.add('open');
     }
 
-    // Lazy init des médias (videos non chargées tant qu'on n'ouvre pas)
+    // Clic sur le conteneur .media (fiable pour image & vidéo)
     function initMedia(){
       $$('.media').forEach(m=>{
-        const type = m.dataset.type;
-        if(type === 'video'){
-          const v = m.querySelector('video');
-          v.addEventListener('click', ()=> openLightbox(v));
-        } else {
-          const img = m.querySelector('img');
-          img.addEventListener('click', ()=> openLightbox(img));
-        }
+        m.addEventListener('click', ()=> openLightbox(m));
       });
     }
 
-    // Boutons "Me contacter" : ouvrent Messenger avec un message pré-rempli
+    // Boutons "Me contacter" : ouvrent Messenger (sans pré-remplir)
     document.addEventListener('click', (e)=>{
       const a = e.target.closest('a.msg');
       if(!a) return;
       e.preventDefault();
-      const msg = encodeURIComponent(`Bonjour, je suis intéressé par : ${a.dataset.msg}`);
-      window.open(`${MESSENGER_URL}?text=${msg}`, '_blank');
+      window.open(MESSENGER_URL, '_blank');
     });
 
     // Listeners filtres
@@ -281,5 +279,3 @@
   </script>
 </body>
 </html>
-
-
