@@ -4,7 +4,7 @@
     "mineral": "Quartz & Schorl",
     "provenance": "Erongo, Namibie",
     "status": "disponible",
-    "dimensions": "7×4×5 cm",
+    "dimensions": "7× 4× 5 cm",
     "type": "video",
     "src": "assets/videos/Nam_Quartz_Schorl_001.mp4",
     "poster": "assets/videos/Nam_Quartz_Schorl_001.jpg",
@@ -17,13 +17,25 @@
     "mineral": "Bois fossile",
     "provenance": "Brésil",
     "status": "nfs",
-    "dimensions": "24x14,5x0,7 cm",
+    "dimensions": "24x 14,5x 0,7 cm",
     "type": "image",
     "src": "assets/videos/Bois_0001.jpg",
     "thumb": "assets/videos/Bois_0001.jpg",
     "desc": "Psaronius brasiliensis, Permien."
-  }
+  },
+  {
+    "id": "Calcedoine_0001",
+    "mineral": "Calcédoine",
+    "provenance": "Brésil",
+    "status": "nfs",
+    "dimensions": "11x 7x 8 cm",
+    "type": "image",
+    "src": "assets/videos/Calcedoine_0001.jpg",
+    "thumb": "assets/videos/Calcedoine_0001.jpg",
+    "desc": "Concrétions en oreilles"
+    }
 ]
+
 
 
 
