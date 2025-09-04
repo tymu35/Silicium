@@ -1,16 +1,5 @@
 [
   {
-    "id": "quartz-lagardette-nfs",
-    "mineral": "Quartz",
-    "provenance": "La Gardette, France",
-    "status": "nfs",
-    "dimensions": "6×4×3 cm",
-    "type": "image",
-    "src": "assets/images/quartz_lagardette.jpg",
-    "thumb": "assets/images/quartz_lagardette.jpg",
-    "desc": "Cristaux élancés et brillants, groupe esthétique sur matrice."
-  },
-  {
     "id": "quartz-schorl-erongo",
     "mineral": "Quartz & Schorl",
     "provenance": "Erongo, Namibie",
@@ -35,5 +24,6 @@
     "desc": "Psaronius brasiliensis, Permien."
   }
 ]
+
 
 
