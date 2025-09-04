@@ -29,6 +29,18 @@
     input[type="search"], select{width:100%; background:transparent; border:none; color:var(--text); outline:none}
     .tool:focus-within{box-shadow:var(--ring); border-color:rgba(122,162,255,.45)}
 
+    /* ✅ Correction affichage des options */
+    select option,
+    select optgroup{
+      background: #ffffff !important;
+      color: #111111 !important;
+    }
+    select:focus,
+    select:active{
+      background: #ffffff;
+      color: #111111;
+    }
+
     main{padding:32px 0}
     .grid{display:grid; gap:18px; grid-template-columns:repeat(1,minmax(0,1fr))}
     @media(min-width:640px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -40,7 +52,6 @@
     .badge{position:absolute; top:10px; left:10px; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700; letter-spacing:.3px; background:rgba(255,255,255,.1); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.2)}
     .badge[data-status="disponible"]{background:orange; border-color:#cc8400; color:black}
     .badge[data-status="nfs"]{background:lightblue; border-color:#3399cc; color:black}
-
 
     .content{padding:14px 14px 16px}
     .title{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px}
@@ -88,7 +99,7 @@
           <select id="statusSelect">
             <option value="">Tous statuts</option>
             <option value="disponible">Disponible</option>
-            <option value="nfs">Collection privée</option>
+            <option value="nfs">Collection NFS</option>
           </select>
         </label>
       </div>
@@ -98,7 +109,7 @@
   <main class="wrap">
     <section id="grid" class="grid" aria-live="polite">
 
-      <!-- Exemple image -->
+      <!-- Exemple NFS -->
       <article class="card" tabindex="0"
         data-mineral="Quartz"
         data-provenance="La Gardette, France"
@@ -120,14 +131,10 @@
             <span>🧪 Silicate</span>
           </div>
           <p class="desc">Cristaux élancés et très brillants, groupe esthétique sur matrice.</p>
-           <div class="actions">
-             <span class="pill">#Quartz</span>
-             <a class="msg" href="#" data-msg="Quartz – La Gardette">Me contacter</a>
-           </div>
         </div>
       </article>
 
-      <!-- Exemple vidéo -->
+      <!-- Exemple disponible -->
       <article class="card" tabindex="0"
         data-mineral="Quartz & Schorl"
         data-provenance="Erongo, Namibie"
@@ -188,31 +195,29 @@
       for(const p of [...provs].sort()) provSelect.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`);
     }
 
-function filter(){
-  const q = $('#q').value.toLowerCase().trim();
-  const m = $('#mineralSelect').value;
-  const p = $('#provSelect').value;
-  const sNorm = ($('#statusSelect').value || '').toLowerCase().trim();
+    function filter(){
+      const q = $('#q').value.toLowerCase().trim();
+      const m = $('#mineralSelect').value;
+      const p = $('#provSelect').value;
+      const sNorm = ($('#statusSelect').value || '').toLowerCase().trim();
 
-  let shown = 0;
-  $$('#grid .card').forEach(card=>{
-    const status = (card.dataset.status || '').toLowerCase().trim();
+      let shown = 0;
+      $$('#grid .card').forEach(card=>{
+        const status = (card.dataset.status || '').toLowerCase().trim();
 
-    const hay = [card.dataset.mineral, card.dataset.provenance, card.dataset.dimensions, card.dataset.keywords]
-      .join(' ').toLowerCase();
-    const matchQ = !q || hay.includes(q);
-    const matchM = !m || card.dataset.mineral === m;
-    const matchP = !p || card.dataset.provenance === p;
-    const matchS = !sNorm || status === sNorm;
+        const hay = [card.dataset.mineral, card.dataset.provenance, card.dataset.dimensions, card.dataset.keywords].join(' ').toLowerCase();
+        const matchQ = !q || hay.includes(q);
+        const matchM = !m || card.dataset.mineral === m;
+        const matchP = !p || card.dataset.provenance === p;
+        const matchS = !sNorm || status === sNorm;
 
-    const ok = matchQ && matchM && matchP && matchS;
-    card.style.display = ok ? '' : 'none';
-    if (ok) shown++;
-  });
-  $('#grid').setAttribute('aria-busy', 'false');
-  $('#grid').setAttribute('data-count', shown);
-}
-
+        const ok = matchQ && matchM && matchP && matchS;
+        card.style.display = ok ? '' : 'none';
+        if(ok) shown++;
+      });
+      $('#grid').setAttribute('aria-busy', 'false');
+      $('#grid').setAttribute('data-count', shown);
+    }
 
     const lb = $('#lightbox');
     const lbContent = $('#lbContent');
