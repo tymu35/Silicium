@@ -120,10 +120,10 @@
             <span>🧪 Silicate</span>
           </div>
           <p class="desc">Cristaux élancés et très brillants, groupe esthétique sur matrice.</p>
-<!--           <div class="actions">
-<!--             <span class="pill">#Quartz</span>
-<!--             <a class="msg" href="#" data-msg="Quartz – La Gardette">Me contacter</a>
-<!--           </div>
+           <div class="actions">
+             <span class="pill">#Quartz</span>
+             <a class="msg" href="#" data-msg="Quartz – La Gardette">Me contacter</a>
+           </div>
         </div>
       </article>
 
@@ -188,25 +188,31 @@
       for(const p of [...provs].sort()) provSelect.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`);
     }
 
-    function filter(){
-      const q = $('#q').value.toLowerCase().trim();
-      const m = $('#mineralSelect').value;
-      const p = $('#provSelect').value;
-      const s = $('#statusSelect').value;
-      let shown = 0;
-      $$('#grid .card').forEach(card=>{
-        const hay = [card.dataset.mineral, card.dataset.provenance, card.dataset.dimensions, card.dataset.keywords].join(' ').toLowerCase();
-        const matchQ = !q || hay.includes(q);
-        const matchM = !m || card.dataset.mineral === m;
-        const matchP = !p || card.dataset.provenance === p;
-        const matchS = !s || card.dataset.status === s;
-        const ok = matchQ && matchM && matchP && matchS;
-        card.style.display = ok ? '' : 'none';
-        if(ok) shown++;
-      });
-      $('#grid').setAttribute('aria-busy', 'false');
-      $('#grid').setAttribute('data-count', shown);
-    }
+function filter(){
+  const q = $('#q').value.toLowerCase().trim();
+  const m = $('#mineralSelect').value;
+  const p = $('#provSelect').value;
+  const sNorm = ($('#statusSelect').value || '').toLowerCase().trim();
+
+  let shown = 0;
+  $$('#grid .card').forEach(card=>{
+    const status = (card.dataset.status || '').toLowerCase().trim();
+
+    const hay = [card.dataset.mineral, card.dataset.provenance, card.dataset.dimensions, card.dataset.keywords]
+      .join(' ').toLowerCase();
+    const matchQ = !q || hay.includes(q);
+    const matchM = !m || card.dataset.mineral === m;
+    const matchP = !p || card.dataset.provenance === p;
+    const matchS = !sNorm || status === sNorm;
+
+    const ok = matchQ && matchM && matchP && matchS;
+    card.style.display = ok ? '' : 'none';
+    if (ok) shown++;
+  });
+  $('#grid').setAttribute('aria-busy', 'false');
+  $('#grid').setAttribute('data-count', shown);
+}
+
 
     const lb = $('#lightbox');
     const lbContent = $('#lbContent');
@@ -263,4 +269,3 @@
   </script>
 </body>
 </html>
-
