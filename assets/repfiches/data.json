@@ -22,7 +22,7 @@
     "thumb": "assets/videos/Nam_Quartz_Schorl_001.jpg",
     "desc": "Tour de cristaux aciculaires de tourmaline (schorl) sur quartz.",
     "price": 120
-  }
+  },
   {
     "id": "bois_0001",
     "mineral": "Bois fossile",
@@ -32,6 +32,7 @@
     "type": "image",
     "src": "assets/videos/bois_0001.jpg",
     "thumb": "assets/videos/bois_0001.jpg",
-    "desc": "Psaronius brasiliensis, Permien.",
+    "desc": "Psaronius brasiliensis, Permien."
   }
 ]
+
