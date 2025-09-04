@@ -29,17 +29,11 @@
     input[type="search"], select{width:100%; background:transparent; border:none; color:var(--text); outline:none}
     .tool:focus-within{box-shadow:var(--ring); border-color:rgba(122,162,255,.45)}
 
-    /* ✅ Correction affichage des options */
+    /* ✅ Options des sélecteurs lisibles quand la liste est ouverte */
     select option,
-    select optgroup{
-      background: #ffffff !important;
-      color: #111111 !important;
-    }
+    select optgroup{ background:#ffffff !important; color:#111111 !important; }
     select:focus,
-    select:active{
-      background: #ffffff;
-      color: #111111;
-    }
+    select:active{ background:#ffffff; color:#111111; }
 
     main{padding:32px 0}
     .grid{display:grid; gap:18px; grid-template-columns:repeat(1,minmax(0,1fr))}
@@ -109,13 +103,14 @@
   <main class="wrap">
     <section id="grid" class="grid" aria-live="polite">
 
-      <!-- Exemple NFS -->
+      <!-- Fiche NFS (exemple) -->
       <article class="card" tabindex="0"
+        data-id="quartz-lagardette-nfs"
         data-mineral="Quartz"
         data-provenance="La Gardette, France"
         data-status="nfs"
         data-dimensions="6×4×3 cm"
-        data-keywords="aiguilles transparent cristallisé"
+        data-keywords=""
       >
         <div class="media" data-type="image" data-src="https://images.unsplash.com/photo-1526318472351-c75fcf070305?auto=format&fit=crop&w=1200&q=60" aria-label="Photo du spécimen">
           <span class="badge" data-status="nfs">Collection NFS</span>
@@ -131,16 +126,21 @@
             <span>🧪 Silicate</span>
           </div>
           <p class="desc">Cristaux élancés et très brillants, groupe esthétique sur matrice.</p>
+          <div class="actions">
+            <span class="pill views" data-id="quartz-lagardette-nfs">0 vue</span>
+            <span></span>
+          </div>
         </div>
       </article>
 
-      <!-- Exemple disponible -->
+      <!-- Fiche Disponible (exemple vidéo) -->
       <article class="card" tabindex="0"
+        data-id="quartz-schorl-erongo"
         data-mineral="Quartz & Schorl"
         data-provenance="Erongo, Namibie"
         data-status="disponible"
         data-dimensions="7×4×5 cm"
-        data-keywords="cristaux aciculaires tourmaline schorl épitaxie quartz"
+        data-keywords=""
       >
         <div class="media" data-type="video" data-src="assets/videos/Nam_Quartz_Schorl_001.mp4">
           <span class="badge" data-status="disponible">Disponible</span>
@@ -157,7 +157,7 @@
           </div>
           <p class="desc">Tour de cristaux aciculaires de tourmaline (schorl) sur quartz.</p>
           <div class="actions">
-            <span class="pill">#Quartz #Schorl</span>
+            <span class="pill views" data-id="quartz-schorl-erongo">0 vue</span>
             <a class="msg" href="#" data-msg="Quartz & Schorl – Erongo">Me contacter</a>
           </div>
         </div>
@@ -167,7 +167,7 @@
   </main>
 
   <footer class="wrap">
-    <small>© </span> Thierry Menu.</small>
+    <small>© <span id="year"></span> Thierry Menu – Contact via Facebook/Messenger.</small>
   </footer>
 
   <div class="lightbox" id="lightbox" aria-modal="true" role="dialog" aria-label="Agrandissement média">
@@ -182,6 +182,30 @@
     const $ = (q, el=document) => el.querySelector(q);
     const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 
+    // --- Compteur de vues (localStorage) ---
+    function viewsKey(id){ return `views:${id}`; }
+    function getViews(id){
+      const n = parseInt(localStorage.getItem(viewsKey(id)) || '0', 10);
+      return isNaN(n) ? 0 : n;
+    }
+    function setViews(id, n){ localStorage.setItem(viewsKey(id), String(n)); }
+    function fmtViews(n){ return n <= 1 ? `${n} vue` : `${n} vues`; }
+    function updateViewsLabel(id, n){
+      const el = document.querySelector(`.pill.views[data-id="${id}"]`);
+      if(el) el.textContent = fmtViews(n);
+    }
+    function incViews(id){
+      const n = getViews(id) + 1;
+      setViews(id, n);
+      updateViewsLabel(id, n);
+    }
+    function initViews(){
+      document.querySelectorAll('.card[data-id]').forEach(card=>{
+        updateViewsLabel(card.dataset.id, getViews(card.dataset.id));
+      });
+    }
+
+    // Filtres
     function populateFilters(){
       const minerals = new Set();
       const provs = new Set();
@@ -204,7 +228,6 @@
       let shown = 0;
       $$('#grid .card').forEach(card=>{
         const status = (card.dataset.status || '').toLowerCase().trim();
-
         const hay = [card.dataset.mineral, card.dataset.provenance, card.dataset.dimensions, card.dataset.keywords].join(' ').toLowerCase();
         const matchQ = !q || hay.includes(q);
         const matchM = !m || card.dataset.mineral === m;
@@ -219,6 +242,7 @@
       $('#grid').setAttribute('data-count', shown);
     }
 
+    // Lightbox
     const lb = $('#lightbox');
     const lbContent = $('#lbContent');
     $('#closeLb').addEventListener('click', ()=> lb.classList.remove('open'));
@@ -234,9 +258,7 @@
         v.playsInline = true;
         v.src = mediaEl.dataset.src;
         lbContent.appendChild(v);
-        v.addEventListener('loadeddata', () => {
-          v.play().catch(()=>{});
-        });
+        v.addEventListener('loadeddata', () => { v.play().catch(()=>{}); });
       } else {
         const img = document.createElement('img');
         const thumb = mediaEl.querySelector('img');
@@ -249,10 +271,15 @@
 
     function initMedia(){
       $$('.media').forEach(m=>{
-        m.addEventListener('click', ()=> openLightbox(m));
+        m.addEventListener('click', ()=>{
+          const card = m.closest('.card');
+          if(card && card.dataset.id) incViews(card.dataset.id); // +1 vue à l’ouverture
+          openLightbox(m);
+        });
       });
     }
 
+    // Messenger
     document.addEventListener('click', (e)=>{
       const a = e.target.closest('a.msg');
       if(!a) return;
@@ -260,18 +287,21 @@
       window.open(MESSENGER_URL, '_blank');
     });
 
+    // Listeners filtres
     ['q','mineralSelect','provSelect','statusSelect'].forEach(id=>{
       document.getElementById(id).addEventListener('input', filter);
       document.getElementById(id).addEventListener('change', filter);
     });
 
+    // Divers
     document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') lb.classList.remove('open'); });
-
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Init
     populateFilters();
+    initViews();
     initMedia();
     filter();
   </script>
 </body>
 </html>
-
