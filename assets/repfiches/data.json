@@ -1,39 +1,38 @@
 [
   {
-    "id": "piece_1",
-    "mineral": "Minéral 1",
-    "provenance": "Localité test",
-    "status": "nfs",
-    "dimensions": "10×5×3 mm",
-    "type": "image",
-    "src": "assets/videos/test.jpg",
-    "thumb": "assets/videos/test.jpg",
-    "desc": "Description fictive de la pièce 1.",
-    "price": null
-  },
-  {
-    "id": "piece_2",
-    "mineral": "Minéral 2",
-    "provenance": "Localité test",
+    "id": "quartz-schorl-erongo",
+    "mineral": "Quartz & Schorl",
+    "provenance": "Erongo, Namibie",
     "status": "disponible",
-    "dimensions": "20×10×6 mm",
-    "type": "image",
-    "src": "assets/videos/test.jpg",
-    "thumb": "assets/videos/test.jpg",
-    "desc": "Description fictive de la pièce 2.",
-    "price": 20
+    "dimensions": "70×40x50 mm",
+    "type": "video",
+    "src": "assets/videos/Nam_Quartz_Schorl_001.mp4",
+    "poster": "assets/videos/Nam_Quartz_Schorl_001.jpg",
+    "thumb": "assets/videos/Nam_Quartz_Schorl_001.jpg",
+    "desc": "Tour de cristaux aciculaires de tourmaline (schorl) sur quartz.",
+    "price": 200
   },
   {
-    "id": "piece_3",
-    "mineral": "Minéral 3",
-    "provenance": "Localité test",
+    "id": "Bois_0001",
+    "mineral": "Bois fossile",
+    "provenance": "Brésil",
     "status": "nfs",
-    "dimensions": "30×15×9 mm",
+    "dimensions": "240×145×7 mm",
     "type": "image",
-    "src": "assets/videos/test.jpg",
-    "thumb": "assets/videos/test.jpg",
-    "desc": "Description fictive de la pièce 3.",
-    "price": null
+    "src": "assets/videos/Bois_0001.jpg",
+    "thumb": "assets/videos/Bois_0001.jpg",
+    "desc": "Psaronius brasiliensis, Permien."
+  },
+  {
+    "id": "Calcedoine_0001",
+    "mineral": "Calcédoine",
+    "provenance": "Brésil",
+    "status": "nfs",
+    "dimensions": "240×145×7 mm",
+    "type": "image",
+    "src": "assets/videos/Calcedoine_0001.jpg",
+    "thumb": "assets/videos/Calcedoine_0001.jpg",
+    "desc": "Oreilles en concrétions."
   },
   {
     "id": "piece_4",
@@ -360,3 +359,4 @@
     "price": 300
   }
 ]
+
