@@ -18,7 +18,7 @@
     a{color:var(--accent-2); text-decoration:none}
     header{position:sticky; top:0; z-index:50; backdrop-filter:saturate(1.2) blur(6px); background:rgba(10,11,14,.6); border-bottom:1px solid rgba(255,255,255,.06)}
     .wrap{max-width:1200px; margin:0 auto; padding:20px}
-    .topbar{display:flex; align-items:center; gap:16px; justify-content:space-between}
+    .topbar{display:flex; align-items:center; gap:16px; justify-content:space-between; position:relative;}
     .brand{display:flex; align-items:center; gap:12px}
     .logo{width:36px; height:36px; border-radius:10px; background:radial-gradient(circle at 30% 30%, #5dd6c0, #7aa2ff 60%, #2d3250); box-shadow:0 8px 30px rgba(93,214,192,.35)}
     h1{font-size:20px; margin:0}
@@ -66,6 +66,28 @@
     .pagination button:hover {background:rgba(255,255,255,.1);}
     .pagination button.active {background:lightblue; color:black; border-color:#3399cc; font-weight:700;}
     .pagination button[disabled] {opacity:.4; cursor:default;}
+
+    /* Lemming animateur */
+    .lemming {
+      position: absolute;
+      top: 44px;
+      left: 84px;
+      font-size: 28px;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 60;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+      animation: lemming-walk 8s linear infinite;
+    }
+    @keyframes lemming-walk {
+      0%   { transform: translateX(0)            scaleX(1); }
+      49%  { transform: translateX(calc(100% - 220px)) scaleX(1); }
+      50%  { transform: translateX(calc(100% - 220px)) scaleX(-1); }
+      100% { transform: translateX(0)            scaleX(-1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lemming { animation: none; }
+    }
   </style>
 </head>
 <body>
@@ -76,6 +98,8 @@
           <div class="logo" aria-hidden="true"></div>
           <h1>Collection Th.Menu</h1>
         </div>
+        <!-- notre lemming -->
+        <div class="lemming" aria-hidden="true" title="Prospecteur">⛏️</div>
         <a class="cta" id="contactBtn" href="#" target="_blank" rel="noopener">💬 Messenger</a>
       </div>
       <div class="toolbar">
@@ -128,140 +152,30 @@
 
     // Construction d'une carte
     function cardHTML(item){
-  const {id, mineral, provenance, status, dimensions, type="image", src, thumb, poster, desc="", price} = item;
-  const badgeLabel = status === "nfs" ? "Collection NFS" : "Disponible";
-  const thumbSrc = type==="image" ? (thumb||src) : (thumb||poster||"");
-  const posterAttr = type==="video" && poster ? ` poster="${poster}"` : "";
-  
-  return `
-  <article class="card" data-id="${id}" data-status="${status}">
-    <div class="media" data-type="${type}" data-src="${src||""}">
-      <span class="badge" data-status="${status}">${badgeLabel}</span>
-      ${ price!=null && status==="disponible" ? `<span class="price">€ ${price}</span>` : "" }
-      ${
-        type==="video"
-          ? `<video preload="none" muted playsinline${posterAttr}></video>`
-          : type==="youtube"
-            ? `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>`
-            : `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>`
-      }
-    </div>
-    <div class="content">
-      <div class="title"><h3>${mineral}</h3><span class="pill">${dimensions||""}</span></div>
-      <div class="meta"><span>📍 ${provenance}</span></div>
-      <p class="desc">${desc}</p>
-      <div class="actions">
-        <span class="pill views" data-id="${id}">0 vue</span>
-        ${ status==="disponible" ? `<a class="msg" href="#" data-msg="${mineral} — ${provenance}">Me contacter</a>` : "<span></span>" }
-      </div>
-    </div>
-  </article>`;
-}
-
-
-    function paginate(items, page, perPage){
-      const start = (page-1)*perPage;
-      return items.slice(start, start+perPage);
-    }
-
-    function renderPage(page){
-      const filtered = currentStatus ? allItems.filter(it=>it.status===currentStatus) : allItems;
-      const totalPages = Math.ceil(filtered.length/ITEMS_PER_PAGE)||1;
-      if(page>totalPages) page=totalPages;
-      currentPage=page;
-      const items = paginate(filtered, page, ITEMS_PER_PAGE);
-      $('#grid').innerHTML = items.map(cardHTML).join('');
-      initViews();
-      initMedia();
-      renderPagination(totalPages);
-      updateURL();
-    }
-
-    function renderPagination(totalPages){
-      [$('#pagination-top'), $('#pagination-bottom')].forEach(container=>{
-        container.innerHTML = '';
-        if(totalPages<=1) return;
-        const makeBtn=(label,page,disabled=false,active=false)=>{
-          const b=document.createElement('button');
-          b.textContent=label;
-          if(disabled) b.disabled=true;
-          if(active) b.classList.add('active');
-          b.onclick=()=>renderPage(page);
-          container.appendChild(b);
-        };
-        makeBtn('« Précédent', Math.max(1,currentPage-1), currentPage===1);
-        const range=2;
-        let start=Math.max(1,currentPage-range);
-        let end=Math.min(totalPages,currentPage+range);
-        if(start>1){ makeBtn('1',1,false,currentPage===1); if(start>2){const d=document.createElement('span');d.textContent='…';container.appendChild(d);} }
-        for(let i=start;i<=end;i++){ makeBtn(i,i,false,currentPage===i); }
-        if(end<totalPages){ if(end<totalPages-1){const d=document.createElement('span');d.textContent='…';container.appendChild(d);} makeBtn(totalPages,totalPages,false,currentPage===totalPages); }
-        makeBtn('Suivant »', Math.min(totalPages,currentPage+1), currentPage===totalPages);
-      });
-    }
-
-const lb = $('#lightbox'), lbContent = $('#lbContent');
-$('#closeLb').onclick = ()=> lb.classList.remove('open');
-
-function openLightbox(m){
-  lbContent.innerHTML = '';
-
-  if (m.dataset.type === 'video') {
-    // Vidéo locale/URL directe (.mp4)
-    const v = document.createElement('video');
-    v.controls = true; v.autoplay = true; v.muted = true; v.playsInline = true;
-    v.src = m.dataset.src;
-    lbContent.appendChild(v);
-    v.play().catch(()=>{});
-  }
-  else if (m.dataset.type === 'youtube') {
-    // YouTube (m.dataset.src = ID YouTube, ex: "ABC123XYZ")
-    const iframe = document.createElement('iframe');
-    iframe.width = "800";
-    iframe.height = "450";
-    iframe.src = "https://www.youtube.com/embed/" + m.dataset.src + "?autoplay=1";
-    iframe.frameBorder = "0";
-    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-    iframe.allowFullscreen = true;
-    lbContent.appendChild(iframe);
-  }
-  else {
-    // Image
-    const i = document.createElement('img');
-    i.src = m.querySelector('img').src;
-    lbContent.appendChild(i);
-  }
-
-  lb.classList.add('open');
-}
-
-    
-    function initMedia(){ $$('.media').forEach(m=>m.onclick=()=>{const c=m.closest('.card');if(c) incViews(c.dataset.id);openLightbox(m);}); }
-
-    document.addEventListener('click',e=>{const a=e.target.closest('a.msg');if(a){e.preventDefault();window.open(MESSENGER_URL,'_blank');}});
-    document.getElementById('statusSelect').onchange = ()=>{currentStatus=$('#statusSelect').value; renderPage(1);};
-
-    document.addEventListener('keydown',e=>{if(e.key==='Escape') lb.classList.remove('open');});
-    document.getElementById('year').textContent=new Date().getFullYear();
-
-    function updateURL(){
-      const params=new URLSearchParams();
-      if(currentStatus) params.set('status',currentStatus);
-      if(currentPage>1) params.set('page',currentPage);
-      history.pushState({},'',window.location.pathname+(params.toString()?'?'+params.toString():''));
-    }
-
-    async function loadData(){
-      try{const r=await fetch(DATA_URL,{cache:'no-store'}); if(!r.ok) throw new Error(r.status); allItems=await r.json();
-        const params=new URLSearchParams(window.location.search);
-        currentStatus=params.get('status')||''; $('#statusSelect').value=currentStatus;
-        currentPage=parseInt(params.get('page'))||1;
-        renderPage(currentPage);
-      }catch(e){console.error(e);$('#grid').innerHTML=`<p style="color:#f99">Erreur de chargement des fiches. Vérifie ${DATA_URL}</p>`;}
-    }
-    loadData();
-  </script>
-</body>
-</html>
-
-
+      const {id, mineral, provenance, status, dimensions, type="image", src, thumb, poster, desc="", price} = item;
+      const badgeLabel = status === "nfs" ? "Collection NFS" : "Disponible";
+      const thumbSrc = type==="image" ? (thumb||src) : (thumb||poster||"");
+      const posterAttr = type==="video" && poster ? ` poster="${poster}"` : "";
+      
+      return `
+      <article class="card" data-id="${id}" data-status="${status}">
+        <div class="media" data-type="${type}" data-src="${src||""}">
+          <span class="badge" data-status="${status}">${badgeLabel}</span>
+          ${ price!=null && status==="disponible" ? `<span class="price">€ ${price}</span>` : "" }
+          ${ 
+            type==="video"
+              ? `<video preload="none" muted playsinline${posterAttr}></video>`
+              : type==="youtube"
+                ? `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>`
+                : `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>`
+          }
+        </div>
+        <div class="content">
+          <div class="title"><h3>${mineral}</h3><span class="pill">${dimensions||""}</span></div>
+          <div class="meta"><span>📍 ${provenance}</span></div>
+          <p class="desc">${desc}</p>
+          <div class="actions">
+            <span class="pill views" data-id="${id}">0 vue</span>
+            ${ status==="disponible" ? `<a class="msg" href="#" data-msg="${mineral} — ${provenance}">Me contacter</a>` : "<span></span>" }
+          </div>
+        </div>
