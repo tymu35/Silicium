@@ -59,6 +59,13 @@
     .lightbox.open{display:flex}
     .lightbox img, .lightbox video{max-width:90vw; max-height:85vh; border-radius:12px}
     footer{border-top:1px solid rgba(255,255,255,.06); color:var(--muted); padding:32px 0 48px}
+
+    /* Pagination */
+    .pagination {display:flex; justify-content:center; gap:6px; margin:16px 0;}
+    .pagination button {padding:6px 12px; border-radius:6px; background:var(--card); color:var(--text); border:1px solid rgba(255,255,255,.2); cursor:pointer;}
+    .pagination button:hover {background:rgba(255,255,255,.1);}
+    .pagination button.active {background:lightblue; color:black; border-color:#3399cc; font-weight:700;}
+    .pagination button[disabled] {opacity:.4; cursor:default;}
   </style>
 </head>
 <body>
@@ -84,7 +91,9 @@
   </header>
 
   <main class="wrap">
+    <div id="pagination-top" class="pagination"></div>
     <section id="grid" class="grid" aria-live="polite"></section>
+    <div id="pagination-bottom" class="pagination"></div>
   </main>
 
   <footer class="wrap">
@@ -99,12 +108,16 @@
   <script>
     const MESSENGER_URL = "https://m.me/thierrym35";
     const DATA_URL = "assets/repfiches/data.json";
+    const ITEMS_PER_PAGE = 12;
+    let allItems = [];
+    let currentPage = 1;
+    let currentStatus = "";
 
     document.getElementById('contactBtn').href = MESSENGER_URL;
     const $ = (q, el=document) => el.querySelector(q);
     const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 
-    // compteur de vues
+    // Compteur vues
     function viewsKey(id){ return `views:${id}`; }
     function getViews(id){ return parseInt(localStorage.getItem(viewsKey(id))||'0',10)||0; }
     function setViews(id,n){ localStorage.setItem(viewsKey(id), String(n)); }
@@ -113,65 +126,142 @@
     function incViews(id){ const n=getViews(id)+1; setViews(id,n); updateViewsLabel(id,n); }
     function initViews(){ $$('#grid .card[data-id]').forEach(c=>updateViewsLabel(c.dataset.id,getViews(c.dataset.id))); }
 
-    // construction d'une carte
+    // Construction d'une carte
     function cardHTML(item){
-      const {id, mineral, provenance, status, dimensions, type="image", src, thumb, poster, desc="", price} = item;
-      const badgeLabel = status === "nfs" ? "Collection NFS" : "Disponible";
-      const thumbSrc = type==="image" ? (thumb||src) : (thumb||poster||"");
-      const posterAttr = type==="video" && poster ? ` poster="${poster}"` : "";
-      return `
-      <article class="card" data-id="${id}" data-status="${status}">
-        <div class="media" data-type="${type}" data-src="${src||""}">
-          <span class="badge" data-status="${status}">${badgeLabel}</span>
-          ${ price!=null && status==="disponible" ? `<span class="price">€ ${price}</span>` : "" }
-          ${ type==="video" ? `<video preload="none" muted playsinline${posterAttr}></video>` : `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>` }
-        </div>
-        <div class="content">
-          <div class="title"><h3>${mineral}</h3><span class="pill">${dimensions||""}</span></div>
-          <div class="meta"><span>📍 ${provenance}</span></div>
-          <p class="desc">${desc}</p>
-          <div class="actions">
-            <span class="pill views" data-id="${id}">0 vue</span>
-            ${ status==="disponible" ? `<a class="msg" href="#" data-msg="${mineral} — ${provenance}">Me contacter</a>` : "<span></span>" }
-          </div>
-        </div>
-      </article>`;
+  const {id, mineral, provenance, status, dimensions, type="image", src, thumb, poster, desc="", price} = item;
+  const badgeLabel = status === "nfs" ? "Collection NFS" : "Disponible";
+  const thumbSrc = type==="image" ? (thumb||src) : (thumb||poster||"");
+  const posterAttr = type==="video" && poster ? ` poster="${poster}"` : "";
+  
+  return `
+  <article class="card" data-id="${id}" data-status="${status}">
+    <div class="media" data-type="${type}" data-src="${src||""}">
+      <span class="badge" data-status="${status}">${badgeLabel}</span>
+      ${ price!=null && status==="disponible" ? `<span class="price">€ ${price}</span>` : "" }
+      ${
+        type==="video"
+          ? `<video preload="none" muted playsinline${posterAttr}></video>`
+          : type==="youtube"
+            ? `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>`
+            : `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>`
+      }
+    </div>
+    <div class="content">
+      <div class="title"><h3>${mineral}</h3><span class="pill">${dimensions||""}</span></div>
+      <div class="meta"><span>📍 ${provenance}</span></div>
+      <p class="desc">${desc}</p>
+      <div class="actions">
+        <span class="pill views" data-id="${id}">0 vue</span>
+        ${ status==="disponible" ? `<a class="msg" href="#" data-msg="${mineral} — ${provenance}">Me contacter</a>` : "<span></span>" }
+      </div>
+    </div>
+  </article>`;
+}
+
+
+    function paginate(items, page, perPage){
+      const start = (page-1)*perPage;
+      return items.slice(start, start+perPage);
     }
 
-    function render(items){
+    function renderPage(page){
+      const filtered = currentStatus ? allItems.filter(it=>it.status===currentStatus) : allItems;
+      const totalPages = Math.ceil(filtered.length/ITEMS_PER_PAGE)||1;
+      if(page>totalPages) page=totalPages;
+      currentPage=page;
+      const items = paginate(filtered, page, ITEMS_PER_PAGE);
       $('#grid').innerHTML = items.map(cardHTML).join('');
       initViews();
       initMedia();
-      filter();
+      renderPagination(totalPages);
+      updateURL();
     }
 
-    function filter(){
-      const s = ($('#statusSelect').value||"").toLowerCase().trim();
-      $$('#grid .card').forEach(c=>{
-        c.style.display = !s || c.dataset.status===s ? '' : 'none';
+    function renderPagination(totalPages){
+      [$('#pagination-top'), $('#pagination-bottom')].forEach(container=>{
+        container.innerHTML = '';
+        if(totalPages<=1) return;
+        const makeBtn=(label,page,disabled=false,active=false)=>{
+          const b=document.createElement('button');
+          b.textContent=label;
+          if(disabled) b.disabled=true;
+          if(active) b.classList.add('active');
+          b.onclick=()=>renderPage(page);
+          container.appendChild(b);
+        };
+        makeBtn('« Précédent', Math.max(1,currentPage-1), currentPage===1);
+        const range=2;
+        let start=Math.max(1,currentPage-range);
+        let end=Math.min(totalPages,currentPage+range);
+        if(start>1){ makeBtn('1',1,false,currentPage===1); if(start>2){const d=document.createElement('span');d.textContent='…';container.appendChild(d);} }
+        for(let i=start;i<=end;i++){ makeBtn(i,i,false,currentPage===i); }
+        if(end<totalPages){ if(end<totalPages-1){const d=document.createElement('span');d.textContent='…';container.appendChild(d);} makeBtn(totalPages,totalPages,false,currentPage===totalPages); }
+        makeBtn('Suivant »', Math.min(totalPages,currentPage+1), currentPage===totalPages);
       });
     }
 
-    const lb = $('#lightbox'), lbContent = $('#lbContent');
-    $('#closeLb').onclick = ()=> lb.classList.remove('open');
-    function openLightbox(m){
-      lbContent.innerHTML='';
-      if(m.dataset.type==='video'){const v=document.createElement('video');v.controls=v.autoplay=true;v.muted=true;v.playsInline=true;v.src=m.dataset.src;lbContent.appendChild(v);v.play().catch(()=>{});}
-      else {const i=document.createElement('img');i.src=m.querySelector('img').src;lbContent.appendChild(i);}
-      lb.classList.add('open');
-    }
+const lb = $('#lightbox'), lbContent = $('#lbContent');
+$('#closeLb').onclick = ()=> lb.classList.remove('open');
+
+function openLightbox(m){
+  lbContent.innerHTML = '';
+
+  if (m.dataset.type === 'video') {
+    // Vidéo locale/URL directe (.mp4)
+    const v = document.createElement('video');
+    v.controls = true; v.autoplay = true; v.muted = true; v.playsInline = true;
+    v.src = m.dataset.src;
+    lbContent.appendChild(v);
+    v.play().catch(()=>{});
+  }
+  else if (m.dataset.type === 'youtube') {
+    // YouTube (m.dataset.src = ID YouTube, ex: "ABC123XYZ")
+    const iframe = document.createElement('iframe');
+    iframe.width = "800";
+    iframe.height = "450";
+    iframe.src = "https://www.youtube.com/embed/" + m.dataset.src + "?autoplay=1";
+    iframe.frameBorder = "0";
+    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+    iframe.allowFullscreen = true;
+    lbContent.appendChild(iframe);
+  }
+  else {
+    // Image
+    const i = document.createElement('img');
+    i.src = m.querySelector('img').src;
+    lbContent.appendChild(i);
+  }
+
+  lb.classList.add('open');
+}
+
+    
     function initMedia(){ $$('.media').forEach(m=>m.onclick=()=>{const c=m.closest('.card');if(c) incViews(c.dataset.id);openLightbox(m);}); }
 
     document.addEventListener('click',e=>{const a=e.target.closest('a.msg');if(a){e.preventDefault();window.open(MESSENGER_URL,'_blank');}});
-    document.getElementById('statusSelect').onchange = filter;
+    document.getElementById('statusSelect').onchange = ()=>{currentStatus=$('#statusSelect').value; renderPage(1);};
+
     document.addEventListener('keydown',e=>{if(e.key==='Escape') lb.classList.remove('open');});
     document.getElementById('year').textContent=new Date().getFullYear();
 
+    function updateURL(){
+      const params=new URLSearchParams();
+      if(currentStatus) params.set('status',currentStatus);
+      if(currentPage>1) params.set('page',currentPage);
+      history.pushState({},'',window.location.pathname+(params.toString()?'?'+params.toString():''));
+    }
+
     async function loadData(){
-      try{const r=await fetch(DATA_URL,{cache:'no-store'}); if(!r.ok) throw new Error(r.status); render(await r.json());}
-      catch(e){console.error(e);$('#grid').innerHTML=`<p style="color:#f99">Erreur de chargement des fiches. Vérifie ${DATA_URL}</p>`;}
+      try{const r=await fetch(DATA_URL,{cache:'no-store'}); if(!r.ok) throw new Error(r.status); allItems=await r.json();
+        const params=new URLSearchParams(window.location.search);
+        currentStatus=params.get('status')||''; $('#statusSelect').value=currentStatus;
+        currentPage=parseInt(params.get('page'))||1;
+        renderPage(currentPage);
+      }catch(e){console.error(e);$('#grid').innerHTML=`<p style="color:#f99">Erreur de chargement des fiches. Vérifie ${DATA_URL}</p>`;}
     }
     loadData();
   </script>
 </body>
 </html>
+
+
