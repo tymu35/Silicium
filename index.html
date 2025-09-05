@@ -200,14 +200,42 @@
       });
     }
 
-    const lb = $('#lightbox'), lbContent = $('#lbContent');
-    $('#closeLb').onclick = ()=> lb.classList.remove('open');
-    function openLightbox(m){
-      lbContent.innerHTML='';
-      if(m.dataset.type==='video'){const v=document.createElement('video');v.controls=v.autoplay=true;v.muted=true;v.playsInline=true;v.src=m.dataset.src;lbContent.appendChild(v);v.play().catch(()=>{});}
-      else {const i=document.createElement('img');i.src=m.querySelector('img').src;lbContent.appendChild(i);}
-      lb.classList.add('open');
-    }
+const lb = $('#lightbox'), lbContent = $('#lbContent');
+$('#closeLb').onclick = ()=> lb.classList.remove('open');
+
+function openLightbox(m){
+  lbContent.innerHTML = '';
+
+  if (m.dataset.type === 'video') {
+    // Vidéo locale/URL directe (.mp4)
+    const v = document.createElement('video');
+    v.controls = true; v.autoplay = true; v.muted = true; v.playsInline = true;
+    v.src = m.dataset.src;
+    lbContent.appendChild(v);
+    v.play().catch(()=>{});
+  }
+  else if (m.dataset.type === 'youtube') {
+    // YouTube (m.dataset.src = ID YouTube, ex: "ABC123XYZ")
+    const iframe = document.createElement('iframe');
+    iframe.width = "800";
+    iframe.height = "450";
+    iframe.src = "https://www.youtube.com/embed/" + m.dataset.src + "?autoplay=1";
+    iframe.frameBorder = "0";
+    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+    iframe.allowFullscreen = true;
+    lbContent.appendChild(iframe);
+  }
+  else {
+    // Image
+    const i = document.createElement('img');
+    i.src = m.querySelector('img').src;
+    lbContent.appendChild(i);
+  }
+
+  lb.classList.add('open');
+}
+
+    
     function initMedia(){ $$('.media').forEach(m=>m.onclick=()=>{const c=m.closest('.card');if(c) incViews(c.dataset.id);openLightbox(m);}); }
 
     document.addEventListener('click',e=>{const a=e.target.closest('a.msg');if(a){e.preventDefault();window.open(MESSENGER_URL,'_blank');}});
@@ -235,4 +263,5 @@
   </script>
 </body>
 </html>
+
 
