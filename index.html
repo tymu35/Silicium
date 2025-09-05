@@ -128,28 +128,36 @@
 
     // Construction d'une carte
     function cardHTML(item){
-      const {id, mineral, provenance, status, dimensions, type="image", src, thumb, poster, desc="", price} = item;
-      const badgeLabel = status === "nfs" ? "Collection NFS" : "Disponible";
-      const thumbSrc = type==="image" ? (thumb||src) : (thumb||poster||"");
-      const posterAttr = type==="video" && poster ? ` poster="${poster}"` : "";
-      return `
-      <article class="card" data-id="${id}" data-status="${status}">
-        <div class="media" data-type="${type}" data-src="${src||""}">
-          <span class="badge" data-status="${status}">${badgeLabel}</span>
-          ${ price!=null && status==="disponible" ? `<span class="price">€ ${price}</span>` : "" }
-          ${ type==="video" ? `<video preload="none" muted playsinline${posterAttr}></video>` : `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>` }
-        </div>
-        <div class="content">
-          <div class="title"><h3>${mineral}</h3><span class="pill">${dimensions||""}</span></div>
-          <div class="meta"><span>📍 ${provenance}</span></div>
-          <p class="desc">${desc}</p>
-          <div class="actions">
-            <span class="pill views" data-id="${id}">0 vue</span>
-            ${ status==="disponible" ? `<a class="msg" href="#" data-msg="${mineral} — ${provenance}">Me contacter</a>` : "<span></span>" }
-          </div>
-        </div>
-      </article>`;
-    }
+  const {id, mineral, provenance, status, dimensions, type="image", src, thumb, poster, desc="", price} = item;
+  const badgeLabel = status === "nfs" ? "Collection NFS" : "Disponible";
+  const thumbSrc = type==="image" ? (thumb||src) : (thumb||poster||"");
+  const posterAttr = type==="video" && poster ? ` poster="${poster}"` : "";
+  
+  return `
+  <article class="card" data-id="${id}" data-status="${status}">
+    <div class="media" data-type="${type}" data-src="${src||""}">
+      <span class="badge" data-status="${status}">${badgeLabel}</span>
+      ${ price!=null && status==="disponible" ? `<span class="price">€ ${price}</span>` : "" }
+      ${
+        type==="video"
+          ? `<video preload="none" muted playsinline${posterAttr}></video>`
+          : type==="youtube"
+            ? `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>`
+            : `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>`
+      }
+    </div>
+    <div class="content">
+      <div class="title"><h3>${mineral}</h3><span class="pill">${dimensions||""}</span></div>
+      <div class="meta"><span>📍 ${provenance}</span></div>
+      <p class="desc">${desc}</p>
+      <div class="actions">
+        <span class="pill views" data-id="${id}">0 vue</span>
+        ${ status==="disponible" ? `<a class="msg" href="#" data-msg="${mineral} — ${provenance}">Me contacter</a>` : "<span></span>" }
+      </div>
+    </div>
+  </article>`;
+}
+
 
     function paginate(items, page, perPage){
       const start = (page-1)*perPage;
@@ -227,3 +235,4 @@
   </script>
 </body>
 </html>
+
