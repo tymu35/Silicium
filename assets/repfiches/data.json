@@ -13,6 +13,19 @@
     "price": 200
   },
   {
+    "id": "AgatDendrites",
+    "mineral": "Agate & Dendrites",
+    "provenance": "Turquie",
+    "status": "disponible",
+    "dimensions": "55x45x0.4 mm",
+    "type": "youtube",
+    "src": "cbeDpKI6qP0",
+    "poster": "assets/videos/Turq_Agate_Dendrites.jpg",
+    "thumb": "assets/videos/Turq_Agate_Dendrites.jpg",
+    "desc": "Grand cabochon d'agate blanche et translucide avec une superbe répartition de dendrites de manganèse parfaitement dessinées.",
+    "price": 70
+  },
+  {
     "id": "Bois_0001",
     "mineral": "Bois fossile",
     "provenance": "Brésil",
@@ -35,6 +48,7 @@
     "desc": "Oreilles sur une concrétion en chaudron."
   }
 ]
+
 
 
 
