@@ -18,7 +18,7 @@
     a{color:var(--accent-2); text-decoration:none}
     header{position:sticky; top:0; z-index:50; backdrop-filter:saturate(1.2) blur(6px); background:rgba(10,11,14,.6); border-bottom:1px solid rgba(255,255,255,.06)}
     .wrap{max-width:1200px; margin:0 auto; padding:20px}
-    .topbar{display:flex; align-items:center; gap:16px; justify-content:space-between; position:relative;}
+    .topbar{display:flex; align-items:center; gap:16px; justify-content:space-between}
     .brand{display:flex; align-items:center; gap:12px}
     .logo{width:36px; height:36px; border-radius:10px; background:radial-gradient(circle at 30% 30%, #5dd6c0, #7aa2ff 60%, #2d3250); box-shadow:0 8px 30px rgba(93,214,192,.35)}
     h1{font-size:20px; margin:0}
@@ -59,35 +59,6 @@
     .lightbox.open{display:flex}
     .lightbox img, .lightbox video{max-width:90vw; max-height:85vh; border-radius:12px}
     footer{border-top:1px solid rgba(255,255,255,.06); color:var(--muted); padding:32px 0 48px}
-
-    /* Pagination */
-    .pagination {display:flex; justify-content:center; gap:6px; margin:16px 0;}
-    .pagination button {padding:6px 12px; border-radius:6px; background:var(--card); color:var(--text); border:1px solid rgba(255,255,255,.2); cursor:pointer;}
-    .pagination button:hover {background:rgba(255,255,255,.1);}
-    .pagination button.active {background:lightblue; color:black; border-color:#3399cc; font-weight:700;}
-    .pagination button[disabled] {opacity:.4; cursor:default;}
-
-    /* Lemming animateur */
-    .lemming {
-      position: absolute;
-      top: 30px;
-      left: 100px;
-      font-size: 28px;
-      line-height: 1;
-      pointer-events: none;
-      z-index: 60;
-      filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
-      animation: lemming-walk 8s linear infinite;
-    }
-    @keyframes lemming-walk {
-      0%   { transform: translateX(0)            scaleX(1); }
-      49%  { transform: translateX(calc(100% - 220px)) scaleX(1); }
-      50%  { transform: translateX(calc(100% - 220px)) scaleX(-1); }
-      100% { transform: translateX(0)            scaleX(-1); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .lemming { animation: none; }
-    }
   </style>
 </head>
 <body>
@@ -98,8 +69,6 @@
           <div class="logo" aria-hidden="true"></div>
           <h1>Collection Th.Menu</h1>
         </div>
-        <!-- notre lemming -->
-        <div class="lemming" aria-hidden="true" title="Prospecteur">⛏️</div>
         <a class="cta" id="contactBtn" href="#" target="_blank" rel="noopener">💬 Messenger</a>
       </div>
       <div class="toolbar">
@@ -115,9 +84,7 @@
   </header>
 
   <main class="wrap">
-    <div id="pagination-top" class="pagination"></div>
     <section id="grid" class="grid" aria-live="polite"></section>
-    <div id="pagination-bottom" class="pagination"></div>
   </main>
 
   <footer class="wrap">
@@ -132,16 +99,12 @@
   <script>
     const MESSENGER_URL = "https://m.me/thierrym35";
     const DATA_URL = "assets/repfiches/data.json";
-    const ITEMS_PER_PAGE = 12;
-    let allItems = [];
-    let currentPage = 1;
-    let currentStatus = "";
 
     document.getElementById('contactBtn').href = MESSENGER_URL;
     const $ = (q, el=document) => el.querySelector(q);
     const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 
-    // Compteur vues
+    // compteur de vues
     function viewsKey(id){ return `views:${id}`; }
     function getViews(id){ return parseInt(localStorage.getItem(viewsKey(id))||'0',10)||0; }
     function setViews(id,n){ localStorage.setItem(viewsKey(id), String(n)); }
@@ -150,25 +113,18 @@
     function incViews(id){ const n=getViews(id)+1; setViews(id,n); updateViewsLabel(id,n); }
     function initViews(){ $$('#grid .card[data-id]').forEach(c=>updateViewsLabel(c.dataset.id,getViews(c.dataset.id))); }
 
-    // Construction d'une carte
+    // construction d'une carte
     function cardHTML(item){
       const {id, mineral, provenance, status, dimensions, type="image", src, thumb, poster, desc="", price} = item;
       const badgeLabel = status === "nfs" ? "Collection NFS" : "Disponible";
       const thumbSrc = type==="image" ? (thumb||src) : (thumb||poster||"");
       const posterAttr = type==="video" && poster ? ` poster="${poster}"` : "";
-      
       return `
       <article class="card" data-id="${id}" data-status="${status}">
         <div class="media" data-type="${type}" data-src="${src||""}">
           <span class="badge" data-status="${status}">${badgeLabel}</span>
           ${ price!=null && status==="disponible" ? `<span class="price">€ ${price}</span>` : "" }
-          ${ 
-            type==="video"
-              ? `<video preload="none" muted playsinline${posterAttr}></video>`
-              : type==="youtube"
-                ? `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>`
-                : `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>`
-          }
+          ${ type==="video" ? `<video preload="none" muted playsinline${posterAttr}></video>` : `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>` }
         </div>
         <div class="content">
           <div class="title"><h3>${mineral}</h3><span class="pill">${dimensions||""}</span></div>
@@ -179,4 +135,43 @@
             ${ status==="disponible" ? `<a class="msg" href="#" data-msg="${mineral} — ${provenance}">Me contacter</a>` : "<span></span>" }
           </div>
         </div>
+      </article>`;
+    }
 
+    function render(items){
+      $('#grid').innerHTML = items.map(cardHTML).join('');
+      initViews();
+      initMedia();
+      filter();
+    }
+
+    function filter(){
+      const s = ($('#statusSelect').value||"").toLowerCase().trim();
+      $$('#grid .card').forEach(c=>{
+        c.style.display = !s || c.dataset.status===s ? '' : 'none';
+      });
+    }
+
+    const lb = $('#lightbox'), lbContent = $('#lbContent');
+    $('#closeLb').onclick = ()=> lb.classList.remove('open');
+    function openLightbox(m){
+      lbContent.innerHTML='';
+      if(m.dataset.type==='video'){const v=document.createElement('video');v.controls=v.autoplay=true;v.muted=true;v.playsInline=true;v.src=m.dataset.src;lbContent.appendChild(v);v.play().catch(()=>{});}
+      else {const i=document.createElement('img');i.src=m.querySelector('img').src;lbContent.appendChild(i);}
+      lb.classList.add('open');
+    }
+    function initMedia(){ $$('.media').forEach(m=>m.onclick=()=>{const c=m.closest('.card');if(c) incViews(c.dataset.id);openLightbox(m);}); }
+
+    document.addEventListener('click',e=>{const a=e.target.closest('a.msg');if(a){e.preventDefault();window.open(MESSENGER_URL,'_blank');}});
+    document.getElementById('statusSelect').onchange = filter;
+    document.addEventListener('keydown',e=>{if(e.key==='Escape') lb.classList.remove('open');});
+    document.getElementById('year').textContent=new Date().getFullYear();
+
+    async function loadData(){
+      try{const r=await fetch(DATA_URL,{cache:'no-store'}); if(!r.ok) throw new Error(r.status); render(await r.json());}
+      catch(e){console.error(e);$('#grid').innerHTML=`<p style="color:#f99">Erreur de chargement des fiches. Vérifie ${DATA_URL}</p>`;}
+    }
+    loadData();
+  </script>
+</body>
+</html>
