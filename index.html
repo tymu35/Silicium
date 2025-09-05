@@ -24,12 +24,10 @@
     h1{font-size:20px; margin:0}
     .cta{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; background:linear-gradient(90deg,var(--accent-2),var(--accent)); border:none; color:#091019; border-radius:12px; font-weight:700; cursor:pointer}
     .cta:hover{transform:translateY(-1px)}
-    /* Toolbar : 1 seul filtre */
     .toolbar{display:grid; grid-template-columns:1fr; gap:12px; margin-top:14px}
     .tool{background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px}
     select{width:100%; background:transparent; border:none; color:var(--text); outline:none}
     .tool:focus-within{box-shadow:var(--ring); border-color:rgba(122,162,255,.45)}
-    /* Options lisibles quand la liste est ouverte */
     select option, select optgroup{ background:#ffffff !important; color:#111111 !important; }
     select:focus, select:active{ background:#ffffff; color:#111111; }
 
@@ -44,7 +42,6 @@
     .badge{position:absolute; top:10px; left:10px; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700; letter-spacing:.3px; background:rgba(255,255,255,.1); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.2)}
     .badge[data-status="disponible"]{background:orange; border-color:#cc8400; color:black}
     .badge[data-status="nfs"]{background:lightblue; border-color:#3399cc; color:black}
-
     .price{position:absolute; bottom:10px; right:10px; padding:6px 10px; border-radius:10px; font-size:12px; font-weight:800; background:#ffe8b3; color:#111; border:1px solid #e4b860; display:none}
     .card[data-status="disponible"] .price{display:inline-block}
 
@@ -52,18 +49,15 @@
     .title{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px}
     .title h3{margin:0; font-size:18px}
     .meta{display:flex; flex-wrap:wrap; gap:10px; color:var(--muted); font-size:13px}
-    .meta span{display:inline-flex; align-items:center; gap:6px}
     .desc{margin:10px 0 12px; color:#cfd6e6; font-size:14px; line-height:1.5}
     .actions{display:flex; align-items:center; justify-content:space-between}
     .pill{padding:8px 12px; background:var(--card); border:1px solid rgba(255,255,255,.1); border-radius:999px; font-size:12px; color:var(--muted)}
     .pill.views{min-width:70px; text-align:center}
     .msg{display:inline-flex; align-items:center; gap:8px; padding:10px 12px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#091019; font-weight:700; border-radius:12px}
 
-    /* Lightbox */
     .lightbox{position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index:100}
     .lightbox.open{display:flex}
     .lightbox img, .lightbox video{max-width:90vw; max-height:85vh; border-radius:12px}
-
     footer{border-top:1px solid rgba(255,255,255,.06); color:var(--muted); padding:32px 0 48px}
   </style>
 </head>
@@ -75,14 +69,10 @@
           <div class="logo" aria-hidden="true"></div>
           <h1>Collection Th.Menu</h1>
         </div>
-        <a class="cta" id="contactBtn" href="#" target="_blank" rel="noopener" aria-label="Me contacter sur Messenger">
-          💬 Messenger
-        </a>
+        <a class="cta" id="contactBtn" href="#" target="_blank" rel="noopener">💬 Messenger</a>
       </div>
-
-      <!-- ✅ Toolbar réduite : seulement le filtre Statut -->
-      <div class="toolbar" role="region" aria-label="Filtre de la galerie">
-        <label class="tool" aria-label="Filtrer par statut">
+      <div class="toolbar">
+        <label class="tool">
           <select id="statusSelect">
             <option value="">Tous statuts</option>
             <option value="disponible">Disponible</option>
@@ -94,76 +84,52 @@
   </header>
 
   <main class="wrap">
-    <section id="grid" class="grid" aria-live="polite">
-      <!-- Les cartes seront générées depuis data.json -->
-    </section>
+    <section id="grid" class="grid" aria-live="polite"></section>
   </main>
 
   <footer class="wrap">
     <small>© <span id="year"></span> Thierry Menu – Contact via Facebook/Messenger.</small>
   </footer>
 
-  <div class="lightbox" id="lightbox" aria-modal="true" role="dialog" aria-label="Agrandissement média">
+  <div class="lightbox" id="lightbox">
     <button class="cta" id="closeLb" style="position:absolute; top:24px; right:24px">Fermer</button>
     <div id="lbContent"></div>
   </div>
 
   <script>
-    // === CONFIG ===
     const MESSENGER_URL = "https://m.me/thierrym35";
-    const DATA_URL      = "assets/repfiches/data.json"; // adapte si besoin
+    const DATA_URL = "assets/repfiches/data.json";
 
     document.getElementById('contactBtn').href = MESSENGER_URL;
     const $ = (q, el=document) => el.querySelector(q);
     const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 
-    // --- Compteur de vues (localStorage) ---
+    // compteur de vues
     function viewsKey(id){ return `views:${id}`; }
-    function getViews(id){ const n = parseInt(localStorage.getItem(viewsKey(id))||'0',10); return isNaN(n)?0:n; }
+    function getViews(id){ return parseInt(localStorage.getItem(viewsKey(id))||'0',10)||0; }
     function setViews(id,n){ localStorage.setItem(viewsKey(id), String(n)); }
     function fmtViews(n){ return n<=1 ? `${n} vue` : `${n} vues`; }
     function updateViewsLabel(id,n){ const el=$(`.pill.views[data-id="${id}"]`); if(el) el.textContent=fmtViews(n); }
     function incViews(id){ const n=getViews(id)+1; setViews(id,n); updateViewsLabel(id,n); }
+    function initViews(){ $$('#grid .card[data-id]').forEach(c=>updateViewsLabel(c.dataset.id,getViews(c.dataset.id))); }
 
-    // --- Construction d'une carte à partir d'un item JSON
+    // construction d'une carte
     function cardHTML(item){
-      const {
-        id, mineral, provenance, status, dimensions,
-        type="image", src, thumb, poster, desc="", price
-      } = item;
-
+      const {id, mineral, provenance, status, dimensions, type="image", src, thumb, poster, desc="", price} = item;
       const badgeLabel = status === "nfs" ? "Collection NFS" : "Disponible";
-      const mediaDataSrc = src || "";
-      const thumbSrc = type === "image" ? (thumb || src) : (thumb || poster || "");
-      const posterAttr = type === "video" && poster ? ` poster="${poster}"` : "";
-
+      const thumbSrc = type==="image" ? (thumb||src) : (thumb||poster||"");
+      const posterAttr = type==="video" && poster ? ` poster="${poster}"` : "";
       return `
-      <article class="card" tabindex="0"
-        data-id="${id}"
-        data-mineral="${mineral}"
-        data-provenance="${provenance}"
-        data-status="${status}"
-        data-dimensions="${dimensions||""}"
-        data-keywords=""
-      >
-        <div class="media" data-type="${type}" data-src="${mediaDataSrc}">
+      <article class="card" data-id="${id}" data-status="${status}">
+        <div class="media" data-type="${type}" data-src="${src||""}">
           <span class="badge" data-status="${status}">${badgeLabel}</span>
           ${ price!=null && status==="disponible" ? `<span class="price">€ ${price}</span>` : "" }
-          ${
-            type==="video"
-            ? `<video preload="none" muted playsinline${posterAttr}></video>`
-            : `<img loading="lazy" alt="${mineral} — ${provenance}" src="${thumbSrc}" />`
-          }
+          ${ type==="video" ? `<video preload="none" muted playsinline${posterAttr}></video>` : `<img src="${thumbSrc}" alt="${mineral} — ${provenance}" loading="lazy"/>` }
         </div>
         <div class="content">
-          <div class="title">
-            <h3>${mineral}</h3>
-            <span class="pill">${dimensions||""}</span>
-          </div>
-          <div class="meta">
-            <span>📍 ${provenance}</span>
-          </div>
-          <p class="desc">${desc||""}</p>
+          <div class="title"><h3>${mineral}</h3><span class="pill">${dimensions||""}</span></div>
+          <div class="meta"><span>📍 ${provenance}</span></div>
+          <p class="desc">${desc}</p>
           <div class="actions">
             <span class="pill views" data-id="${id}">0 vue</span>
             ${ status==="disponible" ? `<a class="msg" href="#" data-msg="${mineral} — ${provenance}">Me contacter</a>` : "<span></span>" }
@@ -172,88 +138,38 @@
       </article>`;
     }
 
-    // --- Rendu
     function render(items){
-      const grid = $('#grid');
-      grid.innerHTML = items.map(cardHTML).join('');
+      $('#grid').innerHTML = items.map(cardHTML).join('');
       initViews();
       initMedia();
-      filter(); // applique le filtre statut courant
+      filter();
     }
 
-    // --- Filtre (statut uniquement)
     function filter(){
-      const sNorm = ($('#statusSelect').value || '').toLowerCase().trim();
-      let shown = 0;
-      $$('#grid .card').forEach(card=>{
-        const status = (card.dataset.status || '').toLowerCase().trim();
-        const ok = !sNorm || status === sNorm;
-        card.style.display = ok ? '' : 'none';
-        if(ok) shown++;
+      const s = ($('#statusSelect').value||"").toLowerCase().trim();
+      $$('#grid .card').forEach(c=>{
+        c.style.display = !s || c.dataset.status===s ? '' : 'none';
       });
-      $('#grid').setAttribute('aria-busy','false');
-      $('#grid').setAttribute('data-count', shown);
     }
 
-    // --- Lightbox
-    const lb = $('#lightbox'); const lbContent = $('#lbContent');
-    $('#closeLb').addEventListener('click', ()=> lb.classList.remove('open'));
-
-    function openLightbox(mediaEl){
-      lbContent.innerHTML = '';
-      const type = mediaEl.dataset.type;
-      if(type === 'video'){
-        const v = document.createElement('video');
-        v.controls = true; v.autoplay = true; v.muted = true; v.playsInline = true;
-        v.src = mediaEl.dataset.src;
-        lbContent.appendChild(v);
-        v.addEventListener('loadeddata', ()=> v.play().catch(()=>{}));
-      } else {
-        const img = document.createElement('img');
-        const thumb = mediaEl.querySelector('img');
-        img.src = thumb.getAttribute('src');
-        img.alt = thumb.alt || '';
-        lbContent.appendChild(img);
-      }
+    const lb = $('#lightbox'), lbContent = $('#lbContent');
+    $('#closeLb').onclick = ()=> lb.classList.remove('open');
+    function openLightbox(m){
+      lbContent.innerHTML='';
+      if(m.dataset.type==='video'){const v=document.createElement('video');v.controls=v.autoplay=true;v.muted=true;v.playsInline=true;v.src=m.dataset.src;lbContent.appendChild(v);v.play().catch(()=>{});}
+      else {const i=document.createElement('img');i.src=m.querySelector('img').src;lbContent.appendChild(i);}
       lb.classList.add('open');
     }
+    function initMedia(){ $$('.media').forEach(m=>m.onclick=()=>{const c=m.closest('.card');if(c) incViews(c.dataset.id);openLightbox(m);}); }
 
-    function initMedia(){
-      $$('.media').forEach(m=>{
-        m.addEventListener('click', ()=>{
-          const card = m.closest('.card');
-          if(card && card.dataset.id) incViews(card.dataset.id); // +1 vue
-          openLightbox(m);
-        });
-      });
-    }
+    document.addEventListener('click',e=>{const a=e.target.closest('a.msg');if(a){e.preventDefault();window.open(MESSENGER_URL,'_blank');}});
+    document.getElementById('statusSelect').onchange = filter;
+    document.addEventListener('keydown',e=>{if(e.key==='Escape') lb.classList.remove('open');});
+    document.getElementById('year').textContent=new Date().getFullYear();
 
-    // Messenger
-    document.addEventListener('click', (e)=>{
-      const a = e.target.closest('a.msg');
-      if(!a) return;
-      e.preventDefault();
-      window.open(MESSENGER_URL, '_blank');
-    });
-
-    // Listener du seul filtre
-    document.getElementById('statusSelect').addEventListener('change', filter);
-
-    // Divers
-    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') lb.classList.remove('open'); });
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Chargement des données
     async function loadData(){
-      try{
-        const resp = await fetch(DATA_URL, {cache:'no-store'});
-        if(!resp.ok) throw new Error('HTTP '+resp.status);
-        const items = await resp.json();
-        render(items);
-      }catch(err){
-        console.error('Erreur chargement data.json', err);
-        $('#grid').innerHTML = `<p style="color:#f99">Erreur de chargement des fiches. Vérifie ${DATA_URL}</p>`;
-      }
+      try{const r=await fetch(DATA_URL,{cache:'no-store'}); if(!r.ok) throw new Error(r.status); render(await r.json());}
+      catch(e){console.error(e);$('#grid').innerHTML=`<p style="color:#f99">Erreur de chargement des fiches. Vérifie ${DATA_URL}</p>`;}
     }
     loadData();
   </script>
